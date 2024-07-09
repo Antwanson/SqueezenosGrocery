@@ -1,0 +1,101 @@
+/* CSS Document */
+
+.navbar ul {
+	list-style-type: none;
+	background-color: #0DA70D;
+	padding: 0px;
+	margin: 0px;
+	overflow: hidden;
+}
+
+.navbar a {
+	display: block;
+	padding: 15px;
+	text-decoration: none;
+	font-size: 18px;
+	color: #f2f2f2;
+	text-align: center;
+}
+
+.navbar a.active {
+	background-color: #17D817;
+}
+
+.navbar a:hover {
+	text-decoration: none;
+	background-color: #f99c5b;
+}
+
+.navbar li {
+	float: right;
+	text-decoration: none;
+}
+
+h1 {
+	text-align: center;
+	margin: 0 0 5px;
+}
+
+.vertical {
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+	border-left: 5px solid black;
+	height: 800px;
+}
+
+.content {
+    display: flex;
+    justify-content: space-around; /* Centers the two content sections horizontally */
+    align-items: flex-start;
+	margin-top: 50px; /* Adjust margin as needed */
+}
+
+.left-content, .right-content {
+    width: calc(50% - 10px); /* Adjust width to leave space for the vertical line */
+    padding: 20px;
+}
+
+.left-content {
+    float: left;
+    text-align: center;
+}
+
+.right-content {
+    float: right;
+    text-align: center;
+}
+
+.input-container {
+	background: #0DA70D;
+	max-width: 400px;
+	margin: 0 auto 10px;
+	padding: 5%;
+	border-radius: 8px;
+	text-align: center;
+}
+
+.input {
+	display: block;
+	width: 100%;
+	padding: 12px;
+	border: 1px solid #dddddd;
+	border-radius: 4px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

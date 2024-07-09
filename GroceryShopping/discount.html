@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Untitled Document</title>
+<link href="assets/css/bootstrap.css" rel="stylesheet">
+<link href="assets/css/main.css" rel="stylesheet">
+</head>
+
+<body>
+<nav class="navbar">
+	<ul>
+		<li>
+			<a href="contact.html">
+				<img src="images/cart-regular.png" alt="Cart" style="height: 20px; width: auto; margin-right: 5px;"/>
+			</a>
+		</li>
+		<li><a href="history.html">History</a></li>
+		<li><a href="orders.html">Orders</a></li>
+		<li><a href="users.html">Users</a></li>
+		<li><a href="sale.html">Sales</a></li>
+		<li><a class="active" href="discount.html">Discounts</a></li>
+		<li><a href="modify.html">Modify Items</a></li>
+		<li><a href="index.html">Home</a></li>
+	</ul>
+</nav>
+	
+<h1>Discounts</h1>
+<div class="vertical"></div>
+<div class="content">
+	<div class="left-content">
+		<h2>Create Discount</h2>
+			<div class="input-container">
+				<input type="text" id="discountName" name="dName" placeholder="Discount Name" required>
+			</div>
+			<div class="input-container">
+				<input type="text" id="discountAmount" name="dAmount" placeholder="Discount Amount" required>
+			</div>
+			<div class="input-container">
+				<input type="text" id="discountStart" name="dStart" placeholder="Start Date" required>
+			</div>
+			<div class="input-container">
+				<input type="text" id="discountExpir" name="dExpir" placeholder="Expiration Date" required>
+			</div>
+			<div class="input-container">
+				<input type="text" id="discountID" name="dID" placeholder="Discount ID" required>
+			</div>
+				<button type="submit">Submit</button>
+	</div>
+	<div class="right-content">
+		<h2>Current Items</h2>
+		<p>List of items currently in database will go here</p>
+	</div>
+</div>
+
+</body>
+</html>
