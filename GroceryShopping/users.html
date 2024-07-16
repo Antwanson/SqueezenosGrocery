@@ -3,8 +3,45 @@
 <head>
 <meta charset="utf-8">
 <title>Untitled Document</title>
+<link href="assets/css/bootstrap.css" rel="stylesheet">
+<link href="assets/css/main.css" rel="stylesheet">
 </head>
 
 <body>
+<nav class="navbar">
+	<ul>
+		<li><a href="history.html">History</a></li>
+		<li><a href="orders.html">Orders</a></li>
+		<li><a class="active" href="users.html">Users</a></li>
+		<li><a href="sale.html">Sales</a></li>
+		<li><a href="discount.html">Discounts</a></li>
+		<li><a href="modify.html">Modify Items</a></li>
+		<li><a href="index.html">Home</a></li>
+	</ul>
+</nav>
+	
+<h1>Users</h1>
+<div class="vertical"></div>
+<div class="content">
+	<div class="left-content">
+		<h2>Modify a user</h2>
+			<div class="input-container">
+				<input type="text" id="userId" name="uID" placeholder="New User ID" required>
+			</div>
+			<div class="input-container">
+				<input type="text" id="userName" name="uName" placeholder="New Username" required>
+			</div>
+			<div class="input-container">
+				<input type="text" id="userEmail" name="uEmail" placeholder="User Email" required>
+			</div>
+				<button type="submit">Submit</button>
+	</div>
+	<div class="right-content">
+		<h2>Current Users</h2>
+		<!-- Get access of data in database and display here -->
+		<p>List of current user accounts</p>
+	</div>
+</div>
+
 </body>
 </html>
