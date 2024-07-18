@@ -1,0 +1,28 @@
+# Node.js specific files and directories
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Directory for temporary files
+tmp/
+temp/
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Dependency directories
+jspm_packages/
+
+# Optional npm cache directory
+.npm
+
+# eslint cache
+.eslintcache
