@@ -2,7 +2,7 @@
 require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
-const cors = require("cors");  // Add this line
+const cors = require("cors");
 // const connection = require("./db");
 
 const app = express();
@@ -10,7 +10,7 @@ const port = process.env.PORT || 3000;
 
 app.use(cors());  // Add this line
 app.use(bodyParser.json());
-app.use(express.static('public')); // Serve your HTML file from a 'public' directory
+// app.use(express.static('public'));
 
 // GET route to fetch data from the database
 app.get("/api/test", (req, res) => {
