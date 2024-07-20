@@ -2,40 +2,79 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Untitled Document</title>
+<title>Add New Fruit</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="assets/css/bootstrap.css" rel="stylesheet">
 <link href="assets/css/main.css" rel="stylesheet">
 </head>
-
 <body>
-	
-<nav class="navbar">
-	<ul>
-		<li><a href="sale.html">Return</a></li>
-	</ul>
-</nav>
+	<nav class="navbar">
+		<ul>
+			<li><a href="history.html">History</a></li>
+			<li><a href="orders.html">Orders</a></li>
+			<li><a href="users.html">Users</a></li>
+			<li><a class="active"  href="sale.html">Sales</a></li>
+			<li><a href="discount.html">Discounts</a></li>
+			<li><a href="modify.html">Modify Items</a></li>
+			<li><a href="index.html">Home</a></li>
+		</ul>
+	</nav>
 
-<div class="container">
-	<div class="center">
-		<h1>Add New Fruit</h1>
-			<div class="input-container">
-				<input type="text" id="salesName" name="sName" placeholder="Fruit Name" required>
+<div class="card-container">
+	<div class="card">
+		<h1 class="text-center">Add New Fruit</h1>
+		<form id="fruitForm">
+			<div class="mb-3">
+				<input type="text" class="form-control" id="salesName" name="sName" placeholder="Fruit Name" required>
 			</div>
-			<div class="input-container">
-				<input type="text" id="salesPrice" name="sPrice" placeholder="Price" required>
+			<div class="mb-3">
+				<input type="number" class="form-control" id="salesPrice" name="sPrice" placeholder="Price" required>
 			</div>
-			<div class="input-container">
-				<input type="text" id="salesQuantity" name="sQuantity" placeholder="Quantity" required>
+			<div class="mb-3">
+				<input type="number" class="form-control" id="salesQuantity" name="sQuantity" placeholder="Quantity" required>
 			</div>
-			<div class="input-container">
-				<input type="text" id="salesExpir" name="sExpir" placeholder="Expiration Date" required>
+			<div class="mb-3">
+				<input type="date" class="form-control" id="salesExpir" name="sExpir" placeholder="Expiration Date" required>
 			</div>
-			<div class="input-container">
-				<textarea id="fruitInfo" name="fInfo" placeholder="Information" required></textarea>
+			<div class="mb-3">
+				<textarea class="form-control" id="fruitInfo" name="fInfo" placeholder="Information" rows="3" required></textarea>
 			</div>
-				<button type="submit">Submit</button>
+			<div class="d-grid">
+				<button type="submit" class="btn btn-primary">Submit</button>
+			</div>
+		</form>
 	</div>
 </div>
-	
+
+<script>
+	document.getElementById('fruitForm').addEventListener('submit', function(e) {
+		e.preventDefault();
+
+		const formData = {
+			sName: document.getElementById('salesName').value,
+			sPrice: document.getElementById('salesPrice').value,
+			sQuantity: document.getElementById('salesQuantity').value,
+			sExpir: document.getElementById('salesExpir').value,
+			fInfo: document.getElementById('fruitInfo').value
+		};
+
+		fetch('http://localhost:3000/test', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify(formData)
+		})
+		.then(response => response.json())
+		.then(data => {
+			console.log('Success:', data);
+			alert('Fruit added successfully!');
+		})
+		.catch((error) => {
+			console.error('Error:', error);
+			alert('An error occurred. Please try again.');
+		});
+	});
+</script>
 </body>
 </html>
