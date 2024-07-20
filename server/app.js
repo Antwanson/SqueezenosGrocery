@@ -13,12 +13,14 @@ app.use(bodyParser.json());
 app.use(express.static('public')); // Serve your HTML file from a 'public' directory
 
 // GET route to fetch data from the database
-app.get("/test", (req, res) => {
+app.get("/api/test", (req, res) => {
+  console.log("got get request");
+  var results = "server is on"
   res.json(results);
 });
 
 // POST route to handle form submission
-app.post("/test", (req, res) => {
+app.post("/api/test", (req, res) => {
   const { sName, sPrice, sQuantity, sExpir, fInfo } = req.body;
     console.log('Received fruit data:', req.body);
   
