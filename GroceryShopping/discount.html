@@ -45,9 +45,37 @@
 	<div class="right-content">
 		<h2>Current Items</h2>
 		<!-- Get access of data in database and display here -->
+		<div id="itemsList"></div>
 		<p>List of discounts currently in database will go here</p>
 	</div>
 </div>
+<script>
+	function fetchItems() {
+		fetch('/api/items')
+			.then(response => response.json())
+			.then(items => {
+				const itemsList = document.getElementById('itemsList');
+				itemsList.innerHTML = '';
+				items.forEach(item => {
+					itemsList.innerHTML += `
+						<div>
+							<h3>${item.item_name}</h3>
+							<p>ID: ${item.item_id}</p>
+							<p>Description: ${item.description}</p>
+							<p>Price: $${item.price}</p>
+							<p>Stock: ${item.stock_quantity}</p>
+							<p>Category: ${item.category}</p>
+						</div>
+						<hr>
+					`;
+				});
+			})
+			.catch(error => console.error('Error:', error));
+	}
+
+	// Fetch items on page load
+	fetchItems();
+</script>
 
 </body>
 </html>

@@ -71,7 +71,8 @@
               class="form-control"
               id="itemCategory"
               name="category"
-              placeholder="Category"
+              value="Fruit"
+              readonly
             />
           </div>
           <div class="d-grid">
@@ -94,7 +95,7 @@
             stock_quantity: parseInt(
               document.getElementById("itemQuantity").value
             ),
-            category: document.getElementById("itemCategory").value,
+            category: "Fruit", // Ensuring the category is always "Fruit"
           };
 
           fetch("/api/items", {
