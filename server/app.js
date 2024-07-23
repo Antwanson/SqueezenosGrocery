@@ -8,23 +8,21 @@ const cors = require("cors");
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(cors());  // Add this line
+app.use(cors());
 app.use(bodyParser.json());
 // app.use(express.static('public'));
 
-// GET route to fetch data from the database
-app.get("/api/test", (req, res) => {
-  console.log("got get request");
-  var results = "server is on"
-  res.json(results);
-});
+// Import all routes
+const routes = require('./routes');
 
-// POST route to handle form submission
-app.post("/api/test", (req, res) => {
-  const { sName, sPrice, sQuantity, sExpir, fInfo } = req.body;
-    console.log('Received fruit data:', req.body);
-  
-  res.json({ message: 'Fruit added successfully', data: req.body });
+// Use routes
+app.use('/api', routes);
+
+// GET route to test server
+app.get("/api/test", (req, res) => {
+  console.log("Got GET request");
+  var results = "Server is on"
+  res.json(results);
 });
 
 app.listen(port, () => {
