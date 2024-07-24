@@ -46,14 +46,14 @@
                     <input type="text" id="itemCategory" name="category" placeholder="Category">
                 </div>
                 <button type="submit">Submit</button>
-			
-				<h2>Delete Item</h2>
-					<div class="input-container">
-                    	<input type="text" id="deleteItem" name="dItem" placeholder="Item ID" required>
-                	</div>
-				<button type="submit">Delete</button>
-				
+            </form>
 
+            <h2>Delete Item</h2>
+            <form id="deleteForm">
+                <div class="input-container">
+                    <input type="number" id="deleteItemId" name="deleteItem" placeholder="Item ID" required>
+                </div>
+                <button type="submit">Delete</button>
             </form>
         </div>
         <div class="right-content">
@@ -121,6 +121,32 @@
                 alert('Item modified successfully!');
                 document.getElementById('modifyForm').reset();
                 fetchItems(); // Refresh the items list
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        });
+
+        document.getElementById('deleteForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const itemId = document.getElementById('deleteItemId').value;
+
+            fetch(`/api/items/${itemId}`, {
+                method: 'DELETE',
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Success:', data);
+                alert('Item deleted successfully!');
+                document.getElementById('deleteForm').reset();
+                fetchItems();
             })
             .catch((error) => {
                 console.error('Error:', error);
