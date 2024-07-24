@@ -84,12 +84,11 @@ router.delete("/items/:id", (req, res) => {
   );
 });
 
-// Order Routes
 router.get("/orders", (req, res) => {
   const { sort, order } = req.query;
   let query = "SELECT * FROM orders";
 
-  if (sort && ["order_date", "user_id", "total_amount"].includes(sort)) {
+  if (sort && ["order_date", "customer_id", "total_amount"].includes(sort)) {
     query += ` ORDER BY ${sort} ${order === "desc" ? "DESC" : "ASC"}`;
   }
 
@@ -103,9 +102,9 @@ router.get("/orders", (req, res) => {
 });
 
 router.get("/orders/current", (req, res) => {
-  // Assuming 'current' orders are those with status 'processing' or 'shipped'
+  // Assuming 'current' orders are those with status 'Processing' or 'Shipped'
   db.query(
-    'SELECT * FROM orders WHERE status IN ("processing", "shipped")',
+    'SELECT * FROM orders WHERE order_status IN ("Processing", "Shipped")',
     (err, results) => {
       if (err) {
         res.status(500).json({ error: err.message });
@@ -117,9 +116,9 @@ router.get("/orders/current", (req, res) => {
 });
 
 router.get("/orders/history", (req, res) => {
-  // Assuming 'history' orders are those with status 'delivered' or 'cancelled'
+  // Assuming 'history' orders are those with status 'Delivered' or 'Cancelled'
   db.query(
-    'SELECT * FROM orders WHERE status IN ("delivered", "cancelled")',
+    'SELECT * FROM orders WHERE order_status IN ("Delivered", "Cancelled")',
     (err, results) => {
       if (err) {
         res.status(500).json({ error: err.message });
@@ -131,34 +130,40 @@ router.get("/orders/history", (req, res) => {
 });
 
 router.post("/orders", (req, res) => {
-  const { user_id, total_amount, status } = req.body;
+  const {
+    customer_id,
+    order_status,
+    total_amount,
+    shipping_address,
+    billing_address,
+    payment_method,
+    shipping_method,
+    promo_code,
+    order_notes
+  } = req.body;
+
   db.query(
-    "INSERT INTO orders (user_id, total_amount, status, order_date) VALUES (?, ?, ?, NOW())",
-    [user_id, total_amount, status],
+    `INSERT INTO orders (
+      customer_id, order_status, total_amount, shipping_address, 
+      billing_address, payment_method, shipping_method, promo_code, order_notes
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      customer_id, order_status, total_amount, shipping_address,
+      billing_address, payment_method, shipping_method, promo_code, order_notes
+    ],
     (err, result) => {
       if (err) {
         res.status(500).json({ error: err.message });
         return;
       }
-      res.status(201).json({ id: result.insertId, ...req.body });
+      res.status(201).json({ order_id: result.insertId, ...req.body });
     }
   );
 });
 
-// User Routes
-router.get("/users", (req, res) => {
-  db.query("SELECT * FROM users", (err, results) => {
-    if (err) {
-      res.status(500).json({ error: err.message });
-      return;
-    }
-    res.json(results);
-  });
-});
-
-router.get("/users/:id", (req, res) => {
+router.get("/orders/:id", (req, res) => {
   db.query(
-    "SELECT * FROM users WHERE id = ?",
+    "SELECT * FROM orders WHERE order_id = ?",
     [req.params.id],
     (err, results) => {
       if (err) {
@@ -166,7 +171,7 @@ router.get("/users/:id", (req, res) => {
         return;
       }
       if (results.length === 0) {
-        res.status(404).json({ message: "User not found" });
+        res.status(404).json({ message: "Order not found" });
         return;
       }
       res.json(results[0]);
@@ -174,21 +179,57 @@ router.get("/users/:id", (req, res) => {
   );
 });
 
-router.put("/users/:id", (req, res) => {
-  const { name, email, role } = req.body;
+router.put("/orders/:id", (req, res) => {
+  const {
+    customer_id,
+    order_status,
+    total_amount,
+    shipping_address,
+    billing_address,
+    payment_method,
+    shipping_method,
+    promo_code,
+    order_notes
+  } = req.body;
+
   db.query(
-    "UPDATE users SET name = ?, email = ?, role = ? WHERE id = ?",
-    [name, email, role, req.params.id],
+    `UPDATE orders SET 
+      customer_id = ?, order_status = ?, total_amount = ?, shipping_address = ?,
+      billing_address = ?, payment_method = ?, shipping_method = ?, promo_code = ?, order_notes = ?
+    WHERE order_id = ?`,
+    [
+      customer_id, order_status, total_amount, shipping_address,
+      billing_address, payment_method, shipping_method, promo_code, order_notes,
+      req.params.id
+    ],
     (err, result) => {
       if (err) {
         res.status(500).json({ error: err.message });
         return;
       }
       if (result.affectedRows === 0) {
-        res.status(404).json({ message: "User not found" });
+        res.status(404).json({ message: "Order not found" });
         return;
       }
-      res.json({ id: req.params.id, ...req.body });
+      res.json({ order_id: req.params.id, ...req.body });
+    }
+  );
+});
+
+router.delete("/orders/:id", (req, res) => {
+  db.query(
+    "DELETE FROM orders WHERE order_id = ?",
+    [req.params.id],
+    (err, result) => {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+      if (result.affectedRows === 0) {
+        res.status(404).json({ message: "Order not found" });
+        return;
+      }
+      res.json({ message: "Order deleted successfully" });
     }
   );
 });

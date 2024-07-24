@@ -77,9 +77,9 @@
                             <tr>
                                 <td>${order.order_id}</td>
                                 <td>${order.user_id}</td>
-                                <td>$${order.total_amount.toFixed(2)}</td>
+                                <td>$${order.total_amount}</td>
                                 <td>${order.status}</td>
-                                <td>${new Date(order.order_date).toLocaleString()}</td>
+                                <td>${(order.order_date)}</td>
                             </tr>
                         `).join('')}
                     </tbody>
