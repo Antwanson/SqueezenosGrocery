@@ -51,7 +51,7 @@
         let currentSort = { field: 'order_date', order: 'asc' };
 
         function fetchOrders() {
-            fetch('/orders/current')
+            fetch('/api/orders/current')
                 .then(response => response.json())
                 .then(data => {
                     orders = data;
