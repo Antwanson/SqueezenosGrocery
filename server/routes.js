@@ -257,23 +257,23 @@ router.get("/discounts", (req, res) => {
 });
 
 // Get a specific discount by ID
-router.get("/discounts/:id", (req, res) => {
-  db.query(
-    "SELECT * FROM discount_codes WHERE discount_id = ?",
-    [req.params.id],
-    (err, results) => {
-      if (err) {
-        res.status(500).json({ error: err.message });
-        return;
-      }
-      if (results.length === 0) {
-        res.status(404).json({ message: "Discount not found" });
-        return;
-      }
-      res.json(results[0]);
-    }
-  );
-});
+// router.get("/discounts/:id", (req, res) => {
+//   db.query(
+//     "SELECT * FROM discount_codes WHERE discount_id = ?",
+//     [req.params.id],
+//     (err, results) => {
+//       if (err) {
+//         res.status(500).json({ error: err.message });
+//         return;
+//       }
+//       if (results.length === 0) {
+//         res.status(404).json({ message: "Discount not found" });
+//         return;
+//       }
+//       res.json(results[0]);
+//     }
+//   );
+// });
 
 // Get a specific discount by code
 router.get("/discounts/code/:code", (req, res) => {
