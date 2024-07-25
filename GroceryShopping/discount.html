@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Untitled Document</title>
+<title>Discounts</title>
 <link href="assets/css/bootstrap.css" rel="stylesheet">
 <link href="assets/css/main.css" rel="stylesheet">
 </head>
@@ -25,52 +25,62 @@
 <div class="content">
 	<div class="left-content">
 		<h2>Create Discount</h2>
+		<form id="createDiscountForm">
 			<div class="input-container">
-				<input type="text" id="discountName" name="dName" placeholder="Discount Name" required>
+				<input type="text" id="discountCode" name="code" placeholder="Discount Code" required>
 			</div>
 			<div class="input-container">
-				<input type="text" id="discountAmount" name="dAmount" placeholder="Discount Amount" required>
+				<input type="number" id="discountValue" name="discount_value" placeholder="Discount Value" step="0.01" required>
 			</div>
 			<div class="input-container">
-				<input type="text" id="discountStart" name="dStart" placeholder="Start Date" required>
+				<input type="date" id="discountStart" name="start_date" placeholder="Start Date">
 			</div>
 			<div class="input-container">
-				<input type="text" id="discountExpir" name="dExpir" placeholder="Expiration Date" required>
+				<input type="date" id="discountExpir" name="end_date" placeholder="Expiration Date">
 			</div>
 			<div class="input-container">
-				<input type="text" id="discountID" name="dID" placeholder="Discount ID" required>
+				<input type="number" id="minOrderAmount" name="min_order_amount" placeholder="Minimum Order Amount" step="0.01">
 			</div>
-				<button type="submit">Submit</button>
+			<div class="input-container">
+				<label>
+					<input type="checkbox" id="discountActive" name="active" checked>
+					Active
+				</label>
+			</div>
+			<button type="submit">Create Discount</button>
+		</form>
 		
 		<h2>Delete Discount</h2>
+		<form id="deleteDiscountForm">
 			<div class="input-container">
-				<input type="text" id="deleteDiscount" name="dDiscount" placeholder="Discount ID" required>
+				<input type="text" id="deleteDiscountId" name="discount_id" placeholder="Discount ID" required>
 			</div>
-				<button type="submit">Delete</button>
+			<button type="submit">Delete</button>
+		</form>
 		
 	</div>
 	<div class="right-content">
 		<h2>Current Discounts</h2>
-		<!-- Get access of data in database and display here -->
-		<div id="itemsList"></div>
+		<div id="discountsList"></div>
 	</div>
 </div>
 <script>
-	function fetchItems() {
-		fetch('/api/items')
+	function fetchDiscounts() {
+		fetch('/api/discounts')
 			.then(response => response.json())
-			.then(items => {
-				const itemsList = document.getElementById('itemsList');
-				itemsList.innerHTML = '';
-				items.forEach(item => {
-					itemsList.innerHTML += `
+			.then(discounts => {
+				const discountsList = document.getElementById('discountsList');
+				discountsList.innerHTML = '';
+				discounts.forEach(discount => {
+					discountsList.innerHTML += `
 						<div>
-							<h3>${item.item_name}</h3>
-							<p>ID: ${item.item_id}</p>
-							<p>Description: ${item.description}</p>
-							<p>Price: $${item.price}</p>
-							<p>Stock: ${item.stock_quantity}</p>
-							<p>Category: ${item.category}</p>
+							<h3>${discount.code}</h3>
+							<p>ID: ${discount.discount_id}</p>
+							<p>Value: ${discount.discount_value}</p>
+							<p>Start Date: ${discount.start_date || 'N/A'}</p>
+							<p>End Date: ${discount.end_date || 'N/A'}</p>
+							<p>Min Order Amount: ${discount.min_order_amount || 'N/A'}</p>
+							<p>Active: ${discount.active ? 'Yes' : 'No'}</p>
 						</div>
 						<hr>
 					`;
@@ -79,8 +89,52 @@
 			.catch(error => console.error('Error:', error));
 	}
 
-	// Fetch items on page load
-	fetchItems();
+	// Fetch discounts on page load
+	fetchDiscounts();
+
+	// Handle create discount form submission
+	document.getElementById('createDiscountForm').addEventListener('submit', function(e) {
+		e.preventDefault();
+		const formData = new FormData(this);
+		const discount = Object.fromEntries(formData.entries());
+		discount.active = discount.active === 'on';
+
+		fetch('/api/discounts', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body: JSON.stringify(discount),
+		})
+		.then(response => response.json())
+		.then(data => {
+			console.log('Success:', data);
+			fetchDiscounts(); // Refresh the discounts list
+			this.reset(); // Reset the form
+		})
+		.catch((error) => {
+			console.error('Error:', error);
+		});
+	});
+
+	// Handle delete discount form submission
+	document.getElementById('deleteDiscountForm').addEventListener('submit', function(e) {
+		e.preventDefault();
+		const discountId = document.getElementById('deleteDiscountId').value;
+
+		fetch(`/api/discounts/${discountId}`, {
+			method: 'DELETE',
+		})
+		.then(response => response.json())
+		.then(data => {
+			console.log('Success:', data);
+			fetchDiscounts(); // Refresh the discounts list
+			this.reset(); // Reset the form
+		})
+		.catch((error) => {
+			console.error('Error:', error);
+		});
+	});
 </script>
 
 </body>

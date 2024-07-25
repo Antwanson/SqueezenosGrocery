@@ -139,7 +139,7 @@ router.post("/orders", (req, res) => {
     payment_method,
     shipping_method,
     promo_code,
-    order_notes
+    order_notes,
   } = req.body;
 
   db.query(
@@ -148,8 +148,15 @@ router.post("/orders", (req, res) => {
       billing_address, payment_method, shipping_method, promo_code, order_notes
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
-      customer_id, order_status, total_amount, shipping_address,
-      billing_address, payment_method, shipping_method, promo_code, order_notes
+      customer_id,
+      order_status,
+      total_amount,
+      shipping_address,
+      billing_address,
+      payment_method,
+      shipping_method,
+      promo_code,
+      order_notes,
     ],
     (err, result) => {
       if (err) {
@@ -189,7 +196,7 @@ router.put("/orders/:id", (req, res) => {
     payment_method,
     shipping_method,
     promo_code,
-    order_notes
+    order_notes,
   } = req.body;
 
   db.query(
@@ -198,9 +205,16 @@ router.put("/orders/:id", (req, res) => {
       billing_address = ?, payment_method = ?, shipping_method = ?, promo_code = ?, order_notes = ?
     WHERE order_id = ?`,
     [
-      customer_id, order_status, total_amount, shipping_address,
-      billing_address, payment_method, shipping_method, promo_code, order_notes,
-      req.params.id
+      customer_id,
+      order_status,
+      total_amount,
+      shipping_address,
+      billing_address,
+      payment_method,
+      shipping_method,
+      promo_code,
+      order_notes,
+      req.params.id,
     ],
     (err, result) => {
       if (err) {
@@ -232,6 +246,233 @@ router.delete("/orders/:id", (req, res) => {
       res.json({ message: "Order deleted successfully" });
     }
   );
+});
+
+router.get("/discounts", (req, res) => {
+  db.query("SELECT * FROM discount_codes", (err, results) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    res.json(results);
+  });
+});
+
+// Get a specific discount by ID
+router.get("/discounts/:id", (req, res) => {
+  db.query(
+    "SELECT * FROM discount_codes WHERE discount_id = ?",
+    [req.params.id],
+    (err, results) => {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+      if (results.length === 0) {
+        res.status(404).json({ message: "Discount not found" });
+        return;
+      }
+      res.json(results[0]);
+    }
+  );
+});
+
+// Get a specific discount by code
+router.get("/discounts/code/:code", (req, res) => {
+  db.query(
+    "SELECT * FROM discount_codes WHERE code = ?",
+    [req.params.code],
+    (err, results) => {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+      if (results.length === 0) {
+        res.status(404).json({ message: "Discount code not found" });
+        return;
+      }
+      res.json(results[0]);
+    }
+  );
+});
+
+// Get active discounts
+router.get("/discounts/active", (req, res) => {
+  const currentDate = new Date().toISOString().split("T")[0]; // Get current date in YYYY-MM-DD format
+  db.query(
+    "SELECT * FROM discount_codes WHERE active = 1 AND (start_date IS NULL OR start_date <= ?) AND (end_date IS NULL OR end_date >= ?)",
+    [currentDate, currentDate],
+    (err, results) => {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+      res.json(results);
+    }
+  );
+});
+
+// Create a new discount
+router.post("/discounts", (req, res) => {
+  const {
+    code,
+    discount_value,
+    start_date,
+    end_date,
+    min_order_amount,
+    active,
+  } = req.body;
+  db.query(
+    "INSERT INTO discount_codes (code, discount_value, start_date, end_date, min_order_amount, active) VALUES (?, ?, ?, ?, ?, ?)",
+    [code, discount_value, start_date, end_date, min_order_amount, active],
+    (err, result) => {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+      res.status(201).json({ discount_id: result.insertId, ...req.body });
+    }
+  );
+});
+
+// Update a discount
+router.put("/discounts/:id", (req, res) => {
+  const {
+    code,
+    discount_value,
+    start_date,
+    end_date,
+    min_order_amount,
+    active,
+  } = req.body;
+  db.query(
+    "UPDATE discount_codes SET code = ?, discount_value = ?, start_date = ?, end_date = ?, min_order_amount = ?, active = ? WHERE discount_id = ?",
+    [
+      code,
+      discount_value,
+      start_date,
+      end_date,
+      min_order_amount,
+      active,
+      req.params.id,
+    ],
+    (err, result) => {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+      if (result.affectedRows === 0) {
+        res.status(404).json({ message: "Discount not found" });
+        return;
+      }
+      res.json({ discount_id: req.params.id, ...req.body });
+    }
+  );
+});
+
+// Delete a discount
+router.delete("/discounts/:id", (req, res) => {
+  db.query(
+    "DELETE FROM discount_codes WHERE discount_id = ?",
+    [req.params.id],
+    (err, result) => {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+      if (result.affectedRows === 0) {
+        res.status(404).json({ message: "Discount not found" });
+        return;
+      }
+      res.json({ message: "Discount deleted successfully" });
+    }
+  );
+});
+
+router.get("/users", async (req, res) => {
+  try {
+    const [rows] = await pool.query("SELECT id, name, email FROM users");
+    res.json(rows);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching users" });
+  }
+});
+
+// Get a single user
+router.get("/users/:id", async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      "SELECT id, name, email FROM users WHERE id = ?",
+      [req.params.id]
+    );
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(rows[0]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching user" });
+  }
+});
+
+// Create a new user
+router.post("/users", async (req, res) => {
+  const { name, email, password } = req.body;
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const [result] = await pool.query(
+      "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
+      [name, email, hashedPassword]
+    );
+    res.status(201).json({ id: result.insertId, name, email });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error creating user" });
+  }
+});
+
+// Update a user
+router.put("/users/:id", async (req, res) => {
+  const { name, email, password } = req.body;
+  try {
+    let query = "UPDATE users SET name = ?, email = ?";
+    let params = [name, email];
+
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      query += ", password = ?";
+      params.push(hashedPassword);
+    }
+
+    query += " WHERE id = ?";
+    params.push(req.params.id);
+
+    const [result] = await pool.query(query, params);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json({ message: "User updated successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error updating user" });
+  }
+});
+
+// Delete a user
+router.delete("/users/:id", async (req, res) => {
+  try {
+    const [result] = await pool.query("DELETE FROM users WHERE id = ?", [
+      req.params.id,
+    ]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json({ message: "User deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error deleting user" });
+  }
 });
 
 module.exports = router;
