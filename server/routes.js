@@ -389,90 +389,110 @@ router.delete("/discounts/:id", (req, res) => {
   );
 });
 
-router.get("/users", async (req, res) => {
-  try {
-    const [rows] = await pool.query("SELECT id, name, email FROM users");
-    res.json(rows);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error fetching users" });
-  }
-});
-
-// Get a single user
-router.get("/users/:id", async (req, res) => {
-  try {
-    const [rows] = await pool.query(
-      "SELECT id, name, email FROM users WHERE id = ?",
-      [req.params.id]
-    );
-    if (rows.length === 0) {
-      return res.status(404).json({ message: "User not found" });
+router.get("/users", (req, res) => {
+  db.query("SELECT id, name, email FROM users", (err, result) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
     }
-    res.json(rows[0]);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error fetching user" });
-  }
+    res.json(result);
+  });
 });
 
-// Create a new user
-router.post("/users", async (req, res) => {
+router.get("/users/:id", (req, res) => {
+  db.query(
+    "SELECT id, name, email FROM users WHERE id = ?",
+    [req.params.id],
+    (err, result) => {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+      if (result.length === 0) {
+        res.status(404).json({ message: "User not found" });
+        return;
+      }
+      res.json(result[0]);
+    }
+  );
+});
+
+router.post("/users", (req, res) => {
   const { name, email, password } = req.body;
-  try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const [result] = await pool.query(
+  bcrypt.hash(password, 10, (err, hashedPassword) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    db.query(
       "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
-      [name, email, hashedPassword]
+      [name, email, hashedPassword],
+      (err, result) => {
+        if (err) {
+          res.status(500).json({ error: err.message });
+          return;
+        }
+        res.status(201).json({ id: result.insertId, name, email });
+      }
     );
-    res.status(201).json({ id: result.insertId, name, email });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error creating user" });
-  }
+  });
 });
 
-// Update a user
-router.put("/users/:id", async (req, res) => {
+router.put("/users/:id", (req, res) => {
   const { name, email, password } = req.body;
-  try {
-    let query = "UPDATE users SET name = ?, email = ?";
-    let params = [name, email];
+  let query = "UPDATE users SET name = ?, email = ?";
+  let params = [name, email];
 
-    if (password) {
-      const hashedPassword = await bcrypt.hash(password, 10);
+  if (password) {
+    bcrypt.hash(password, 10, (err, hashedPassword) => {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
       query += ", password = ?";
       params.push(hashedPassword);
-    }
+      params.push(req.params.id);
 
-    query += " WHERE id = ?";
+      db.query(query + " WHERE id = ?", params, (err, result) => {
+        if (err) {
+          res.status(500).json({ error: err.message });
+          return;
+        }
+        if (result.affectedRows === 0) {
+          res.status(404).json({ message: "User not found" });
+          return;
+        }
+        res.json({ message: "User updated successfully" });
+      });
+    });
+  } else {
     params.push(req.params.id);
-
-    const [result] = await pool.query(query, params);
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    res.json({ message: "User updated successfully" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error updating user" });
+    db.query(query + " WHERE id = ?", params, (err, result) => {
+      if (err) {
+        res.status(500).json({ error: err.message });
+        return;
+      }
+      if (result.affectedRows === 0) {
+        res.status(404).json({ message: "User not found" });
+        return;
+      }
+      res.json({ message: "User updated successfully" });
+    });
   }
 });
 
-// Delete a user
-router.delete("/users/:id", async (req, res) => {
-  try {
-    const [result] = await pool.query("DELETE FROM users WHERE id = ?", [
-      req.params.id,
-    ]);
+router.delete("/users/:id", (req, res) => {
+  db.query("DELETE FROM users WHERE id = ?", [req.params.id], (err, result) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
     if (result.affectedRows === 0) {
-      return res.status(404).json({ message: "User not found" });
+      res.status(404).json({ message: "User not found" });
+      return;
     }
     res.json({ message: "User deleted successfully" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Error deleting user" });
-  }
+  });
 });
 
 module.exports = router;
