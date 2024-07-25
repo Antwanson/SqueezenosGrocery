@@ -63,32 +63,43 @@
     </div>
 
     <script>
-        // Function to fetch and display items
-        function fetchItems() {
-            fetch('/api/items')
-                .then(response => response.json())
-                .then(items => {
-                    const itemsList = document.getElementById('itemsList');
-                    itemsList.innerHTML = '';
-                    items.forEach(item => {
-                        itemsList.innerHTML += `
-                            <div>
-                                <h3>${item.item_name}</h3>
-                                <p>ID: ${item.item_id}</p>
-                                <p>Description: ${item.description}</p>
-                                <p>Price: $${item.price}</p>
-                                <p>Stock: ${item.stock_quantity}</p>
-                                <p>Category: ${item.category}</p>
-                            </div>
-                            <hr>
-                        `;
-                    });
-                })
-                .catch(error => console.error('Error:', error));
+        // Function to fetch items and active discounts, then display them
+        function fetchItemsAndDiscounts() {
+            Promise.all([
+                fetch('/api/items').then(response => response.json()),
+                fetch('/api/discounts/active').then(response => response.json())
+            ])
+            .then(([items, activeDiscounts]) => {
+                const itemsList = document.getElementById('itemsList');
+                itemsList.innerHTML = '';
+                items.forEach(item => {
+                    const applicableDiscount = activeDiscounts.find(discount => discount.item_id === item.item_id);
+                    
+                    const isOnSale = applicableDiscount !== undefined;
+                    const discountedPrice = isOnSale ? (item.price - applicableDiscount.discount_value).toFixed(2) : null;
+                    
+                    itemsList.innerHTML += `
+                        <div>
+                            <h3>${item.item_name}</h3>
+                            <p>ID: ${item.item_id}</p>
+                            <p>Description: ${item.description}</p>
+                            <p>Regular Price: $${item.price.toFixed(2)}</p>
+                            ${isOnSale 
+                                ? `<p style="color: green;">On Sale! Discounted Price: $${discountedPrice}</p>
+                                   <p>Discount Code: ${applicableDiscount.code}</p>` 
+                                : '<p>Not on sale</p>'}
+                            <p>Stock: ${item.stock_quantity}</p>
+                            <p>Category: ${item.category}</p>
+                        </div>
+                        <hr>
+                    `;
+                });
+            })
+            .catch(error => console.error('Error:', error));
         }
 
-        // Fetch items on page load
-        fetchItems();
+        // Fetch items and discounts on page load
+        fetchItemsAndDiscounts();
 
         // Handle form submission for modifying items
         document.getElementById('modifyForm').addEventListener('submit', function(e) {
@@ -120,7 +131,7 @@
                 console.log('Success:', data);
                 alert('Item modified successfully!');
                 document.getElementById('modifyForm').reset();
-                fetchItems(); // Refresh the items list
+                fetchItemsAndDiscounts(); // Refresh the items list
             })
             .catch((error) => {
                 console.error('Error:', error);
@@ -146,7 +157,7 @@
                 console.log('Success:', data);
                 alert('Item deleted successfully!');
                 document.getElementById('deleteForm').reset();
-                fetchItems();
+                fetchItemsAndDiscounts();
             })
             .catch((error) => {
                 console.error('Error:', error);

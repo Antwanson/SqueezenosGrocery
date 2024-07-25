@@ -42,6 +42,9 @@
 				<input type="number" id="minOrderAmount" name="min_order_amount" placeholder="Minimum Order Amount" step="0.01">
 			</div>
 			<div class="input-container">
+				<input type="number" id="itemId" name="item_id" placeholder="Item ID">
+			</div>
+			<div class="input-container">
 				<label>
 					<input type="checkbox" id="discountActive" name="active" checked>
 					Active
@@ -80,6 +83,7 @@
 							<p>Start Date: ${discount.start_date || 'N/A'}</p>
 							<p>End Date: ${discount.end_date || 'N/A'}</p>
 							<p>Min Order Amount: ${discount.min_order_amount || 'N/A'}</p>
+							<p>Item ID: ${discount.item_id || 'N/A'}</p>
 							<p>Active: ${discount.active ? 'Yes' : 'No'}</p>
 						</div>
 						<hr>
@@ -98,6 +102,13 @@
 		const formData = new FormData(this);
 		const discount = Object.fromEntries(formData.entries());
 		discount.active = discount.active === 'on';
+		
+		// Convert item_id to null if it's an empty string
+		if (discount.item_id === '') {
+			discount.item_id = null;
+		} else {
+			discount.item_id = parseInt(discount.item_id);
+		}
 
 		fetch('/api/discounts', {
 			method: 'POST',

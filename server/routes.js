@@ -102,7 +102,6 @@ router.get("/orders", (req, res) => {
 });
 
 router.get("/orders/current", (req, res) => {
-  // Assuming 'current' orders are those with status 'Processing' or 'Shipped'
   db.query(
     'SELECT * FROM orders WHERE order_status IN ("Processing", "Shipped")',
     (err, results) => {
@@ -116,7 +115,6 @@ router.get("/orders/current", (req, res) => {
 });
 
 router.get("/orders/history", (req, res) => {
-  // Assuming 'history' orders are those with status 'Delivered' or 'Cancelled'
   db.query(
     'SELECT * FROM orders WHERE order_status IN ("Delivered", "Cancelled")',
     (err, results) => {
