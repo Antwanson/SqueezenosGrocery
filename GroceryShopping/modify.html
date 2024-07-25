@@ -6,6 +6,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="assets/css/bootstrap.css" rel="stylesheet">
     <link href="assets/css/main.css" rel="stylesheet">
+    <style>
+        .item-image {
+            max-width: 100px;
+            max-height: 100px;
+            object-fit: cover;
+        }
+        .item-card {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .item-card.selected {
+            border-color: #007bff;
+            background-color: #f8f9fa;
+        }
+    </style>
 </head>
 
 <body>
@@ -27,9 +44,7 @@
         <div class="left-content">
             <h2>Modify Item</h2>
             <form id="modifyForm">
-                <div class="input-container">
-                    <input type="number" id="itemId" name="item_id" placeholder="Item ID" required>
-                </div>
+                <input type="hidden" id="itemId" name="item_id">
                 <div class="input-container">
                     <input type="text" id="itemName" name="item_name" placeholder="Item Name" required>
                 </div>
@@ -37,23 +52,20 @@
                     <textarea id="itemDescription" name="description" placeholder="Description" required></textarea>
                 </div>
                 <div class="input-container">
-                    <input type="number" id="itemPrice" name="price" placeholder="New Price" step="0.01" required>
+                    <input type="number" id="itemPrice" name="price" placeholder="Price" step="0.01" required>
                 </div>
                 <div class="input-container">
-                    <input type="number" id="itemQuantity" name="stock_quantity" placeholder="New Quantity" required>
+                    <input type="number" id="itemQuantity" name="stock_quantity" placeholder="Quantity" required>
                 </div>
                 <div class="input-container">
                     <input type="text" id="itemCategory" name="category" placeholder="Category">
                 </div>
-                <button type="submit">Submit</button>
+                <button type="submit">Update Item</button>
             </form>
 
             <h2>Delete Item</h2>
             <form id="deleteForm">
-                <div class="input-container">
-                    <input type="number" id="deleteItemId" name="deleteItem" placeholder="Item ID" required>
-                </div>
-                <button type="submit">Delete</button>
+                <button type="submit">Delete Selected Item</button>
             </form>
         </div>
         <div class="right-content">
@@ -63,7 +75,22 @@
     </div>
 
     <script>
-        // Function to fetch items and active discounts, then display them
+        let selectedItemId = null;
+
+        function getCategoryImage(category) {
+            const categoryMap = {
+                'Apple': 'Apple.jpg',
+                'Beverage': 'beverage.jpg',
+                'Canned Goods': 'Canned Goods.jpg',
+                'Fruit': '1 FruitBasket.jpeg',
+                'Meat': 'Meat.jpeg',
+                'Toy': 'Toy.jpg',
+                'Vegetables': 'vegetables-variet... a Vegetables ipeg'
+            };
+
+            return categoryMap[category] || 'cart-regular.png';
+        }
+
         function fetchItemsAndDiscounts() {
             Promise.all([
                 fetch('/api/items').then(response => response.json()),
@@ -78,34 +105,53 @@
                     const isOnSale = applicableDiscount !== undefined;
                     const discountedPrice = isOnSale ? (item.price - applicableDiscount.discount_value).toFixed(2) : null;
                     
-                    itemsList.innerHTML += `
-                        <div>
-                            <h3>${item.item_name}</h3>
-                            <p>ID: ${item.item_id}</p>
-                            <p>Description: ${item.description}</p>
-                            <p>Regular Price: $${item.price.toFixed(2)}</p>
-                            ${isOnSale 
-                                ? `<p style="color: green;">On Sale! Discounted Price: $${discountedPrice}</p>
-                                   <p>Discount Code: ${applicableDiscount.code}</p>` 
-                                : '<p>Not on sale</p>'}
-                            <p>Stock: ${item.stock_quantity}</p>
-                            <p>Category: ${item.category}</p>
-                        </div>
-                        <hr>
+                    const itemCard = document.createElement('div');
+                    itemCard.className = `item-card ${item.item_id === selectedItemId ? 'selected' : ''}`;
+                    itemCard.innerHTML = `
+                        <img src="images/${getCategoryImage(item.category)}" alt="${item.category}" class="item-image">
+                        <h3>${item.item_name}</h3>
+                        <p>ID: ${item.item_id}</p>
+                        <p>Description: ${item.description}</p>
+                        <p>Regular Price: $${item.price}</p>
+                        ${isOnSale 
+                            ? `<p style="color: green;">On Sale! Discounted Price: $${discountedPrice}</p>
+                               <p>Discount Code: ${applicableDiscount.code}</p>` 
+                            : '<p>Not on sale</p>'}
+                        <p>Stock: ${item.stock_quantity}</p>
+                        <p>Category: ${item.category}</p>
                     `;
+                    itemCard.addEventListener('click', () => selectItem(item));
+                    itemsList.appendChild(itemCard);
                 });
             })
             .catch(error => console.error('Error:', error));
         }
 
-        // Fetch items and discounts on page load
+        function selectItem(item) {
+            selectedItemId = item.item_id;
+            document.getElementById('itemId').value = item.item_id;
+            document.getElementById('itemName').value = item.item_name;
+            document.getElementById('itemDescription').value = item.description;
+            document.getElementById('itemPrice').value = item.price;
+            document.getElementById('itemQuantity').value = item.stock_quantity;
+            document.getElementById('itemCategory').value = item.category;
+
+            document.querySelectorAll('.item-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
+        }
+
         fetchItemsAndDiscounts();
 
-        // Handle form submission for modifying items
         document.getElementById('modifyForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
-            const itemId = document.getElementById('itemId').value;
+            if (!selectedItemId) {
+                alert('Please select an item to modify');
+                return;
+            }
+
             const formData = {
                 item_name: document.getElementById('itemName').value,
                 description: document.getElementById('itemDescription').value,
@@ -114,7 +160,7 @@
                 category: document.getElementById('itemCategory').value
             };
 
-            fetch(`/api/items/${itemId}`, {
+            fetch(`/api/items/${selectedItemId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -130,8 +176,7 @@
             .then(data => {
                 console.log('Success:', data);
                 alert('Item modified successfully!');
-                document.getElementById('modifyForm').reset();
-                fetchItemsAndDiscounts(); // Refresh the items list
+                fetchItemsAndDiscounts();
             })
             .catch((error) => {
                 console.error('Error:', error);
@@ -142,9 +187,12 @@
         document.getElementById('deleteForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
-            const itemId = document.getElementById('deleteItemId').value;
+            if (!selectedItemId) {
+                alert('Please select an item to delete');
+                return;
+            }
 
-            fetch(`/api/items/${itemId}`, {
+            fetch(`/api/items/${selectedItemId}`, {
                 method: 'DELETE',
             })
             .then(response => {
@@ -156,7 +204,8 @@
             .then(data => {
                 console.log('Success:', data);
                 alert('Item deleted successfully!');
-                document.getElementById('deleteForm').reset();
+                document.getElementById('modifyForm').reset();
+                selectedItemId = null;
                 fetchItemsAndDiscounts();
             })
             .catch((error) => {
