@@ -310,7 +310,6 @@ router.get("/discounts/active", (req, res) => {
   );
 });
 
-// Create a new discount
 router.post("/discounts", (req, res) => {
   const {
     code,
@@ -319,10 +318,20 @@ router.post("/discounts", (req, res) => {
     end_date,
     min_order_amount,
     active,
+    item_id,
   } = req.body;
+
   db.query(
-    "INSERT INTO discount_codes (code, discount_value, start_date, end_date, min_order_amount, active) VALUES (?, ?, ?, ?, ?, ?)",
-    [code, discount_value, start_date, end_date, min_order_amount, active],
+    "INSERT INTO discount_codes (code, discount_value, start_date, end_date, min_order_amount, active, item_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
+    [
+      code,
+      discount_value,
+      start_date || null,
+      end_date || null,
+      min_order_amount || null,
+      active !== undefined ? active : 1,
+      item_id || null,
+    ],
     (err, result) => {
       if (err) {
         res.status(500).json({ error: err.message });
@@ -342,16 +351,19 @@ router.put("/discounts/:id", (req, res) => {
     end_date,
     min_order_amount,
     active,
+    item_id,
   } = req.body;
+
   db.query(
-    "UPDATE discount_codes SET code = ?, discount_value = ?, start_date = ?, end_date = ?, min_order_amount = ?, active = ? WHERE discount_id = ?",
+    "UPDATE discount_codes SET code = ?, discount_value = ?, start_date = ?, end_date = ?, min_order_amount = ?, active = ?, item_id = ? WHERE discount_id = ?",
     [
       code,
       discount_value,
-      start_date,
-      end_date,
-      min_order_amount,
-      active,
+      start_date || null,
+      end_date || null,
+      min_order_amount || null,
+      active !== undefined ? active : 1,
+      item_id || null,
       req.params.id,
     ],
     (err, result) => {

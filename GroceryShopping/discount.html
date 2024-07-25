@@ -1,152 +1,195 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<title>Discounts</title>
-<link href="assets/css/bootstrap.css" rel="stylesheet">
-<link href="assets/css/main.css" rel="stylesheet">
+    <meta charset="utf-8">
+    <title>Discounts</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="assets/css/bootstrap.css" rel="stylesheet">
+    <link href="assets/css/main.css" rel="stylesheet">
+    <style>
+        .discount-card {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .discount-card.selected {
+            border-color: #007bff;
+            background-color: #f8f9fa;
+        }
+    </style>
 </head>
 
 <body>
-<nav class="navbar">
-	<ul>
-		<li><a href="history.html">History</a></li>
-		<li><a href="orders.html">Orders</a></li>
-		<li><a href="users.html">Users</a></li>
-		<li><a href="sale.html">Sales</a></li>
-		<li><a class="active" href="discount.html">Discounts</a></li>
-		<li><a href="modify.html">Modify Items</a></li>
-		<li><a href="index.html">Home</a></li>
-	</ul>
-</nav>
-	
-<h1>Discounts</h1>
-<div class="vertical"></div>
-<div class="content">
-	<div class="left-content">
-		<h2>Create Discount</h2>
-		<form id="createDiscountForm">
-			<div class="input-container">
-				<input type="text" id="discountCode" name="code" placeholder="Discount Code" required>
-			</div>
-			<div class="input-container">
-				<input type="number" id="discountValue" name="discount_value" placeholder="Discount Value" step="0.01" required>
-			</div>
-			<div class="input-container">
-				<input type="date" id="discountStart" name="start_date" placeholder="Start Date">
-			</div>
-			<div class="input-container">
-				<input type="date" id="discountExpir" name="end_date" placeholder="Expiration Date">
-			</div>
-			<div class="input-container">
-				<input type="number" id="minOrderAmount" name="min_order_amount" placeholder="Minimum Order Amount" step="0.01">
-			</div>
-			<div class="input-container">
-				<input type="number" id="itemId" name="item_id" placeholder="Item ID">
-			</div>
-			<div class="input-container">
-				<label>
-					<input type="checkbox" id="discountActive" name="active" checked>
-					Active
-				</label>
-			</div>
-			<button type="submit">Create Discount</button>
-		</form>
-		
-		<h2>Delete Discount</h2>
-		<form id="deleteDiscountForm">
-			<div class="input-container">
-				<input type="text" id="deleteDiscountId" name="discount_id" placeholder="Discount ID" required>
-			</div>
-			<button type="submit">Delete</button>
-		</form>
-		
-	</div>
-	<div class="right-content">
-		<h2>Current Discounts</h2>
-		<div id="discountsList"></div>
-	</div>
-</div>
-<script>
-	function fetchDiscounts() {
-		fetch('/api/discounts')
-			.then(response => response.json())
-			.then(discounts => {
-				const discountsList = document.getElementById('discountsList');
-				discountsList.innerHTML = '';
-				discounts.forEach(discount => {
-					discountsList.innerHTML += `
-						<div>
-							<h3>${discount.code}</h3>
-							<p>ID: ${discount.discount_id}</p>
-							<p>Value: ${discount.discount_value}</p>
-							<p>Start Date: ${discount.start_date || 'N/A'}</p>
-							<p>End Date: ${discount.end_date || 'N/A'}</p>
-							<p>Min Order Amount: ${discount.min_order_amount || 'N/A'}</p>
-							<p>Item ID: ${discount.item_id || 'N/A'}</p>
-							<p>Active: ${discount.active ? 'Yes' : 'No'}</p>
-						</div>
-						<hr>
-					`;
-				});
-			})
-			.catch(error => console.error('Error:', error));
-	}
+    <nav class="navbar">
+        <ul>
+            <li><a href="history.html">History</a></li>
+            <li><a href="orders.html">Orders</a></li>
+            <li><a href="users.html">Users</a></li>
+            <li><a href="sale.html">Sales</a></li>
+            <li><a class="active" href="discount.html">Discounts</a></li>
+            <li><a href="modify.html">Modify Items</a></li>
+            <li><a href="index.html">Home</a></li>
+        </ul>
+    </nav>
+    
+    <h1>Discounts</h1>
+    <div class="vertical"></div>
+    <div class="content">
+        <div class="left-content">
+            <h2>Create/Modify Discount</h2>
+            <form id="discountForm">
+                <input type="hidden" id="discountId" name="discount_id">
+                <div class="input-container">
+                    <input type="text" id="discountCode" name="code" placeholder="Discount Code" required>
+                </div>
+                <div class="input-container">
+                    <input type="number" id="discountValue" name="discount_value" placeholder="Discount Value" step="0.01" required>
+                </div>
+                <div class="input-container">
+                    <input type="date" id="discountStart" name="start_date" placeholder="Start Date">
+                </div>
+                <div class="input-container">
+                    <input type="date" id="discountExpir" name="end_date" placeholder="Expiration Date">
+                </div>
+                <div class="input-container">
+                    <input type="number" id="minOrderAmount" name="min_order_amount" placeholder="Minimum Order Amount" step="0.01">
+                </div>
+                <div class="input-container">
+                    <input type="number" id="itemId" name="item_id" placeholder="Item ID">
+                </div>
+                <div class="input-container">
+                    <label>
+                        <input type="checkbox" id="discountActive" name="active" checked>
+                        Active
+                    </label>
+                </div>
+                <button type="submit" id="submitButton">Create Discount</button>
+            </form>
+            
+            <h2>Delete Discount</h2>
+            <form id="deleteDiscountForm">
+                <button type="submit">Delete Selected Discount</button>
+            </form>
+        </div>
+        <div class="right-content">
+            <h2>Current Discounts</h2>
+            <div id="discountsList"></div>
+        </div>
+    </div>
 
-	// Fetch discounts on page load
-	fetchDiscounts();
+    <script>
+        let selectedDiscountId = null;
 
-	// Handle create discount form submission
-	document.getElementById('createDiscountForm').addEventListener('submit', function(e) {
-		e.preventDefault();
-		const formData = new FormData(this);
-		const discount = Object.fromEntries(formData.entries());
-		discount.active = discount.active === 'on';
-		
-		// Convert item_id to null if it's an empty string
-		if (discount.item_id === '') {
-			discount.item_id = null;
-		} else {
-			discount.item_id = parseInt(discount.item_id);
-		}
+        function fetchDiscounts() {
+            fetch('/api/discounts')
+                .then(response => response.json())
+                .then(discounts => {
+                    const discountsList = document.getElementById('discountsList');
+                    discountsList.innerHTML = '';
+                    discounts.forEach(discount => {
+                        const discountCard = document.createElement('div');
+                        discountCard.className = `discount-card ${discount.discount_id === selectedDiscountId ? 'selected' : ''}`;
+                        discountCard.innerHTML = `
+                            <h3>${discount.code}</h3>
+                            <p>ID: ${discount.discount_id}</p>
+                            <p>Value: ${discount.discount_value}</p>
+                            <p>Start Date: ${discount.start_date || 'N/A'}</p>
+                            <p>End Date: ${discount.end_date || 'N/A'}</p>
+                            <p>Min Order Amount: ${discount.min_order_amount || 'N/A'}</p>
+                            <p>Item ID: ${discount.item_id || 'N/A'}</p>
+                            <p>Active: ${discount.active ? 'Yes' : 'No'}</p>
+                        `;
+                        discountCard.addEventListener('click', () => selectDiscount(discount));
+                        discountsList.appendChild(discountCard);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        }
 
-		fetch('/api/discounts', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify(discount),
-		})
-		.then(response => response.json())
-		.then(data => {
-			console.log('Success:', data);
-			fetchDiscounts(); // Refresh the discounts list
-			this.reset(); // Reset the form
-		})
-		.catch((error) => {
-			console.error('Error:', error);
-		});
-	});
+        function selectDiscount(discount) {
+            selectedDiscountId = discount.discount_id;
+            document.getElementById('discountId').value = discount.discount_id;
+            document.getElementById('discountCode').value = discount.code;
+            document.getElementById('discountValue').value = discount.discount_value;
+            document.getElementById('discountStart').value = discount.start_date || '';
+            document.getElementById('discountExpir').value = discount.end_date || '';
+            document.getElementById('minOrderAmount').value = discount.min_order_amount || '';
+            document.getElementById('itemId').value = discount.item_id || '';
+            document.getElementById('discountActive').checked = discount.active;
 
-	// Handle delete discount form submission
-	document.getElementById('deleteDiscountForm').addEventListener('submit', function(e) {
-		e.preventDefault();
-		const discountId = document.getElementById('deleteDiscountId').value;
+            document.querySelectorAll('.discount-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.currentTarget.classList.add('selected');
 
-		fetch(`/api/discounts/${discountId}`, {
-			method: 'DELETE',
-		})
-		.then(response => response.json())
-		.then(data => {
-			console.log('Success:', data);
-			fetchDiscounts(); // Refresh the discounts list
-			this.reset(); // Reset the form
-		})
-		.catch((error) => {
-			console.error('Error:', error);
-		});
-	});
-</script>
+            document.getElementById('submitButton').textContent = 'Update Discount';
+        }
 
+        // Fetch discounts on page load
+        fetchDiscounts();
+
+        // Handle discount form submission (create or update)
+        document.getElementById('discountForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const discount = Object.fromEntries(formData.entries());
+            discount.active = discount.active === 'on';
+            
+            // Convert item_id to null if it's an empty string
+            if (discount.item_id === '') {
+                discount.item_id = null;
+            } else {
+                discount.item_id = parseInt(discount.item_id);
+            }
+
+            const url = selectedDiscountId ? `/api/discounts/${selectedDiscountId}` : '/api/discounts';
+            const method = selectedDiscountId ? 'PUT' : 'POST';
+
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(discount),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                fetchDiscounts(); // Refresh the discounts list
+                this.reset(); // Reset the form
+                selectedDiscountId = null;
+                document.getElementById('submitButton').textContent = 'Create Discount';
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        });
+
+        // Handle delete discount form submission
+        document.getElementById('deleteDiscountForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (!selectedDiscountId) {
+                alert('Please select a discount to delete');
+                return;
+            }
+
+            fetch(`/api/discounts/${selectedDiscountId}`, {
+                method: 'DELETE',
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+                fetchDiscounts(); // Refresh the discounts list
+                document.getElementById('discountForm').reset(); // Reset the form
+                selectedDiscountId = null;
+                document.getElementById('submitButton').textContent = 'Create Discount';
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
 </body>
 </html>
